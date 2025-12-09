@@ -1,6 +1,4 @@
-### 🔥 See the full demo on YouTube
-
-### [Youtube Video, Click Here](https://youtu.be/ECPqEtfY_1U)
+### 🔥 See the full demo on YouTube: [Youtube Video, Click Here](https://youtu.be/ECPqEtfY_1U)
 
 ---
 
