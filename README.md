@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+### 🔥 See the full demo on YouTube
 
-## Getting Started
+[**(insert YouTube link here)**](https://youtu.be/ECPqEtfY_1U)
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+# Real-Time Local Image Captioning on RTX-3070
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+This project started because I wanted to answer a simple question:
+**Can I build a fully offline, real-time image captioning system that runs on my own GPU without relying on cloud APIs?**
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+I didn’t want "just another script" that processes a folder of images. I wanted something that feels alive. A live webcam feed, captions updating every few seconds, everything happening instantly on my machine.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Where it began
 
-## Learn More
+When I first started, I had no clue which vision-language model could run fast enough locally. I kept bouncing between documentation for Ollama, Hugging Face, Qwen VL, LLaVA and a few others. A lot of them looked powerful, but most either needed too much VRAM, were too slow, or relied on cloud processing.
 
-To learn more about Next.js, take a look at the following resources:
+Eventually I landed on **MoonDream**. The architecture uses SigLIP for visual encoding and Phi for language. It looked lightweight so I tried it. It immediately gave the best combination of speed and coherent captions on my **RTX-3070**, consistently under **2 seconds per inference**.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+That was the moment where I knew I could actually make this work.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## The unexpected wall
 
-## Deploy on Vercel
+I thought connecting everything would be easy. It wasn’t.
+WSL kept blocking NVIDIA GPU acceleration and I couldn’t get CUDA exposed. Every attempt resulted in CPU inference which was too slow to be "real-time".
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+I had to solve this chain of problems one by one:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+* Fix NVIDIA drivers that worked with WSL
+* Match CUDA versions with Torch versions
+* Set environment paths manually so FastAPI could see the GPU
+* Rebuild CUDA-enabled Python wheels when torch refused to bind
+
+After hours of debugging, the first inference log finally printed **"cuda:0"**. That was the turning point. The moment I saw that, I knew the rest of the system was just engineering.
+
+## Building the loop
+
+Once the backend was stable, the rest of the project became about performance.
+The slowest part wasn’t actually inference, it was **data transfer**.
+
+Sending images from the Next.js frontend to FastAPI using base64 or JSON was too heavy. So I switched to **binary multipart uploads**. That alone cut transfer time dramatically and made everything feel instant.
+
+After that, the loop was complete:
+
+1. Next.js grabs a webcam frame every 3 seconds
+2. Sends the frame as binary to FastAPI
+3. MoonDream runs inference on GPU
+4. Server returns caption and inference time
+5. UI updates live in the corner of the screen
+
+When everything synced for the first time, the caption appeared almost at the exact moment the object was in the camera frame. It finally felt like a *real* product, not just a prototype.
+
+## What I learned
+
+This project wasn’t about "using cool tech". It was a reminder that:
+
+* Real-time AI is mostly about **latency and data flow**
+* Running models locally can be faster than cloud if optimized correctly
+* GPU access on Windows is harder than it should be
+* Vision inference feels more alive when data never leaves the device
+
+I didn’t build this for competition or show. I built it because I wanted that moment where the model sees the world through the webcam and responds instantly.
+
+And that moment genuinely felt worth the struggle.

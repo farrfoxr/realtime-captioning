@@ -8,6 +8,7 @@ export default function LiveCamera() {
   const [error, setError] = useState<string>("");
   const [fps, setFps] = useState<number>(0);
   const [caption, setCaption] = useState<string>("Waiting for caption...");
+  const [inferenceTime, setInferenceTime] = useState<number | null>(null);
 
   useEffect(() => {
     let frameCount = 0;
@@ -79,6 +80,7 @@ export default function LiveCamera() {
               const data = await response.json();
               if (data.status === "success") {
                 setCaption(data.caption);
+                setInferenceTime(data.inference_time);
               }
             } catch (err) {
               console.error("Error sending frame:", err);
@@ -130,6 +132,11 @@ export default function LiveCamera() {
           <p className="text-sm font-light text-gray-400">
             {caption}
           </p>
+          {inferenceTime !== null && (
+            <p className="text-xs text-gray-600 mt-1">
+              Inference: {inferenceTime.toFixed(2)}s
+            </p>
+          )}
         </div>
 
       </div>

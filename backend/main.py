@@ -4,6 +4,7 @@ from transformers import AutoModelForCausalLM
 from PIL import Image
 import torch
 import io
+import time
 
 app = FastAPI()
 
@@ -33,10 +34,17 @@ async def predict(file: UploadFile = File(...)):
         contents = await file.read()
         image = Image.open(io.BytesIO(contents))
         
-        # Generate caption
+        # Generate caption with timing
+        start_time = time.time()
         caption = model.caption(image, length="short")["caption"]
+        end_time = time.time()        
+        inference_time = end_time - start_time
         
-        return {"status": "success", "caption": caption}
+        return {
+            "status": "success", 
+            "caption": caption, 
+            "inference_time": inference_time
+        }
     except Exception as e:
         print(f"Error: {e}")
         return {"status": "error", "message": str(e)}
@@ -44,3 +52,5 @@ async def predict(file: UploadFile = File(...)):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+    # uvicorn main:app --reload --host 0.0.0.0 --port 8000
