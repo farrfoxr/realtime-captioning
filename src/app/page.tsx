@@ -187,7 +187,7 @@ export default function LiveCamera() {
         </div>
 
         {/* Video / Placeholder Area */}
-        <div className="relative overflow-hidden rounded-2xl border border-gray-700 bg-black shadow-2xl aspect-video">
+        <div className="relative overflow-hidden rounded-2xl border border-gray-700 bg-black shadow-2xl aspect-[3/4] md:aspect-video">
 
           {/* Active Camera Feed */}
           {isStreaming && (
