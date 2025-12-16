@@ -27,6 +27,10 @@ model = AutoModelForCausalLM.from_pretrained(
 )
 print("Model loaded successfully!")
 
+@app.get("/health")
+async def health_check():
+    return {"status": "ok"}
+
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
     try:
